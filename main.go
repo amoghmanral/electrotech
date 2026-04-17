@@ -1,8 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"os"
+)
 
 func main() {
+	policy := flag.String("policy", "greedy", "dispatch policy: greedy | reactive | predictive")
+	flag.Parse()
+
 	// channels for each component
 	solarTickCh := make(chan int)
 	solarOutCh := make(chan float64)
@@ -28,7 +35,19 @@ func main() {
 	go Load(loadTickCh, loadOutCh)
 	go Grid(gridTickCh, gridPriceCh, gridCmdCh, gridCostCh)
 	go Battery(batCmdCh, batLevelCh, batActualCh)
-	go PolicyGreedy(policyDataCh, policyBatCh, policyGridCh)
+
+	switch *policy {
+		case "greedy":
+			go PolicyGreedy(policyDataCh, policyBatCh, policyGridCh)
+		case "reactive":
+			go PolicyPriceReactive(policyDataCh, policyBatCh, policyGridCh)
+		case "predictive":
+			go PolicyPredictive(policyDataCh, policyBatCh, policyGridCh)
+		default:
+			fmt.Printf("unknown policy (choices: greedy | reactive | predictive)\n")
+			os.Exit(1)
+	}
+	fmt.Printf("Policy: %s\n\n", *policy)
 
 	// orchestrator tracks battery level separately so it can feed policy
 	batteryLevel := BatteryCapacity * 0.5

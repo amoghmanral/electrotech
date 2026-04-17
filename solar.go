@@ -13,6 +13,16 @@ func Solar(tickCh <-chan int, outCh chan<- float64) {
 	}
 }
 
+// Noise-free solar curve for predictive policy
+func solarBase(hour float64) float64 {
+	const sunrise, sunset = 6.0, 18.0
+	if hour < sunrise || hour > sunset {
+		return 0.0
+	}
+	fraction := (hour - sunrise) / (sunset - sunrise)
+	return SolarPeakKW * math.Sin(fraction * math.Pi)
+}
+
 // sine curve from 6am to 6pm, zero otherwise
 // adds a bit of noise to make it less perfect
 func solarOutput(hour float64) float64 {
