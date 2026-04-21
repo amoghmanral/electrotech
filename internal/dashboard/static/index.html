@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ELECTROTECH · fleet + policy cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="bolt" viewBox="0 0 16 16" width="28" height="28" shape-rendering="crispEdges">
+      <rect x="8" y="1" width="3" height="1" fill="#f2c043"/>
+      <rect x="6" y="2" width="4" height="2" fill="#f2c043"/>
+      <rect x="5" y="4" width="4" height="2" fill="#f2c043"/>
+      <rect x="7" y="6" width="4" height="1" fill="#f2c043"/>
+      <rect x="6" y="7" width="4" height="1" fill="#f2c043"/>
+      <rect x="5" y="8" width="4" height="2" fill="#f2c043"/>
+      <rect x="4" y="10" width="3" height="2" fill="#f2c043"/>
+      <rect x="4" y="12" width="2" height="2" fill="#f2c043"/>
+    </svg>
+    <div>
+      <div class="title">ELECTROTECH</div>
+      <div class="subtitle">FLEET &middot; POLICY CLOUD</div>
+    </div>
+  </div>
+
+  <div class="clock">
+    <div class="clock-item"><span class="lbl">DAY</span><span id="day">0</span></div>
+    <div class="clock-item"><span class="lbl">TICK</span><span id="tick">0</span></div>
+    <div class="clock-item"><span class="lbl">HOUR</span><span id="hour">00:00</span></div>
+    <div class="clock-item"><span class="lbl">PRICE</span><span id="price">$0.000</span></div>
+    <div class="clock-item"><span class="lbl">HOMES</span><span id="homes-count">0</span></div>
+  </div>
+
+  <div class="controls">
+    <div class="speed">
+      <span class="lbl">SPEED</span>
+      <button data-speed="1" class="active">1x</button>
+      <button data-speed="2">2x</button>
+      <button data-speed="5">5x</button>
+    </div>
+    <button id="pause-btn" class="pause">|| PAUSE</button>
+  </div>
+</header>
+
+<main>
+  <section id="fleet-panel" class="panel">
+    <div class="panel-title">FLEET &middot; <span id="fleet-note">click a home to inspect</span></div>
+    <div id="fleet-grid"></div>
+  </section>
+
+  <aside id="sidebar">
+    <section class="panel server-panel">
+      <div class="panel-title">POLICY SERVER</div>
+      <div id="server-card">
+        <div class="srv-row">
+          <div class="srv-cell">
+            <div class="k">STRATEGY</div>
+            <div class="v" id="srv-strategy">—</div>
+          </div>
+          <div class="srv-cell">
+            <div class="k">RPCS/SEC</div>
+            <div class="v" id="srv-rate">0.0</div>
+          </div>
+          <div class="srv-cell">
+            <div class="k">AVG LATENCY</div>
+            <div class="v" id="srv-latency">0.0 ms</div>
+          </div>
+          <div class="srv-cell">
+            <div class="k">ACTIVE</div>
+            <div class="v" id="srv-active">0</div>
+          </div>
+          <div class="srv-cell">
+            <div class="k">TOTAL RPCS</div>
+            <div class="v" id="srv-total">0</div>
+          </div>
+          <div class="srv-cell">
+            <div class="k">UPTIME</div>
+            <div class="v" id="srv-uptime">0s</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel fleet-stats">
+      <div class="panel-title">FLEET AGGREGATE</div>
+      <div class="agg-grid">
+        <div class="agg-cell">
+          <div class="k">NET GRID</div>
+          <div class="v" id="agg-grid">0.0 kW</div>
+        </div>
+        <div class="agg-cell">
+          <div class="k">SOLAR</div>
+          <div class="v mono-green" id="agg-solar">0.0 kW</div>
+        </div>
+        <div class="agg-cell">
+          <div class="k">LOAD</div>
+          <div class="v mono-red" id="agg-load">0.0 kW</div>
+        </div>
+        <div class="agg-cell">
+          <div class="k">AVG SOC</div>
+          <div class="v" id="agg-soc">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="panel-title">PRICE &amp; FLEET DEMAND</div>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    </section>
+
+    <section class="panel rpc-panel">
+      <div class="panel-title">LIVE RPC LOG</div>
+      <div id="rpc-log" class="rpc-log"></div>
+    </section>
+  </aside>
+</main>
+
+<!-- inspector overlay -->
+<div id="inspector" class="inspector hidden">
+  <div class="insp-body">
+    <button id="insp-close">× CLOSE</button>
+    <div id="insp-content"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
