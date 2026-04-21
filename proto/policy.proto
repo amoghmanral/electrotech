@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package policy;
+
+option go_package = "github.com/amoghmanral/electrotech/internal/policypb";
+
+// PolicyService is the strategic decision-making cloud service that home
+// clients call once per tick. The home reports its local physics state
+// plus its own physical limits; the service returns what to do with the
+// battery and the grid.
+//
+// This mirrors the production split used by commercial home-battery
+// products (Tesla Powerwall, Enphase, SolarEdge, sonnen): real-time
+// control lives on the device, strategic dispatch lives in the cloud.
+service PolicyService {
+  rpc Dispatch(TickContext) returns (DispatchDecision);
+}
+
+// TickContext is everything the policy needs to make a decision for one
+// tick. No state is carried across calls — the home supplies its own
+// measurements and physical parameters every time.
+message TickContext {
+  string home_id         = 1;
+  int32  tick            = 2;
+  double hour            = 3;
+  double solar_kw        = 4;   // instantaneous solar output
+  double load_kw         = 5;   // instantaneous household load
+  double battery_soc_kwh = 6;   // current battery state of charge
+  double grid_price      = 7;   // $/kWh at the grid tariff
+
+  // Per-home physical limits so the server can serve heterogeneous fleets
+  // from a single strategy implementation.
+  double battery_capacity_kwh = 8;
+  double battery_max_kw       = 9;   // symmetric charge/discharge limit
+  double solar_peak_kw        = 10;  // needed by predictive forecasts
+}
+
+// DispatchDecision: positive battery_kw charges; negative discharges.
+// Positive grid_kw imports; negative exports.
+message DispatchDecision {
+  double battery_kw = 1;
+  double grid_kw    = 2;
+  string strategy   = 3;
+}
