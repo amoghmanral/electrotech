@@ -208,6 +208,66 @@ main {
 .home-tile.exporting .tile-badge { background: var(--green-dk); color: var(--green); }
 .home-tile.offline .tile-badge { background: var(--red-dk); color: var(--red); }
 
+/* ===== policy selector ===== */
+.policy-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: var(--panel-2);
+  border: 2px solid var(--border);
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.policy-row-lbl {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+.policy-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.policy-select {
+  flex: 1;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 1px;
+  background: var(--bg-deep);
+  color: var(--amber);
+  border: 2px solid var(--amber-dk);
+  padding: 5px 28px 5px 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h2v1h1v1h1v1h1v1h1V3h1V2h1V1h1V0h2v1H8v1H7v1H6v1H5v1H4V4H3V3H2V2H1V1H0V0z' fill='%23aa7a15'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 8px) center;
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.4);
+  transition: border-color 0.15s, color 0.15s;
+}
+.policy-select:hover { border-color: var(--amber); }
+.policy-select:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 2px rgba(242,192,67,0.2), inset -2px -2px 0 rgba(0,0,0,0.4); }
+.policy-select option { background: var(--panel); color: var(--text); }
+.policy-select.greedy   { color: var(--green);  border-color: var(--green-dk); }
+.policy-select.reactive { color: var(--purple); border-color: #5c3b7a; }
+.policy-select.predictive { color: var(--blue); border-color: var(--blue-dk); }
+
+.policy-flash {
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 1px;
+  min-width: 40px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.policy-flash.ok  { color: var(--green); opacity: 1; }
+.policy-flash.err { color: var(--red);   opacity: 1; }
+
 /* ===== sidebar ===== */
 #sidebar {
   display: grid;

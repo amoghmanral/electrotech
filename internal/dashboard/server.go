@@ -23,21 +23,26 @@ var staticFS embed.FS
 // serializable snapshot of the policy-server's own metrics.
 type ServerStatsProvider func() any
 
+// Called when dashboard requests a strategy change
+type PolicyChanger func(strategy string) error
+
 type Server struct {
-	fleet   *home.Fleet
-	statsFn ServerStatsProvider
+	fleet         *home.Fleet
+	statsFn       ServerStatsProvider
+	policyChanger PolicyChanger
 
 	upgrader websocket.Upgrader
 	subs     map[chan []byte]struct{}
 	subsMu   sync.Mutex
 }
 
-func New(f *home.Fleet, statsFn ServerStatsProvider) *Server {
+func New(f *home.Fleet, statsFn ServerStatsProvider, policyChanger PolicyChanger) *Server {
 	return &Server{
-		fleet:    f,
-		statsFn:  statsFn,
-		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
-		subs:     make(map[chan []byte]struct{}),
+		fleet:         f,
+		statsFn:       statsFn,
+		policyChanger: policyChanger,
+		upgrader:      websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		subs:          make(map[chan []byte]struct{}),
 	}
 }
 
@@ -64,6 +69,7 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("/api/speed", s.handleSpeed)
 	mux.HandleFunc("/api/pause", s.handlePause)
 	mux.HandleFunc("/api/resume", s.handleResume)
+	mux.HandleFunc("/api/policy", s.handlePolicy)
 	return mux
 }
 
@@ -144,5 +150,11 @@ func (s *Server) handlePause(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleResume(w http.ResponseWriter, r *http.Request) {
 	s.fleet.SetRunning(true)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handlePolicy(w http.ResponseWriter, r *http.Request) {
+	strategy := r.URL.Query().Get("strategy")
+	s.policyChanger(strategy)
 	w.WriteHeader(http.StatusNoContent)
 }

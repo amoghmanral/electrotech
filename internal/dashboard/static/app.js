@@ -411,6 +411,11 @@
     $("homes-count").textContent = (f.homes || []).length;
 
     $("srv-strategy").textContent = (srv.strategy || "—").toUpperCase();
+    const sel = $("policy-select");
+    if (srv.strategy && document.activeElement !== sel) {
+      sel.value = srv.strategy;
+      sel.className = "policy-select " + srv.strategy;
+    }
     $("srv-rate").textContent = (srv.rate_per_sec ?? 0).toFixed(1);
     $("srv-latency").textContent = (srv.avg_latency_ms ?? 0).toFixed(2) + " ms";
     $("srv-active").textContent = srv.active_calls ?? 0;
@@ -459,6 +464,26 @@
     paused = !paused;
     $("pause-btn").textContent = paused ? "> RESUME" : "|| PAUSE";
     fetch(`/api/${paused ? "pause" : "resume"}`, { method: "POST" });
+  });
+
+  // policy selector
+  const policyFlash = $("policy-flash");
+  let flashTimer = null;
+  function showFlash(ok) {
+    policyFlash.textContent = ok ? "OK" : "ERR";
+    policyFlash.className = "policy-flash " + (ok ? "ok" : "err");
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => { policyFlash.className = "policy-flash"; }, 1500);
+  }
+  $("policy-select").addEventListener("change", async () => {
+    const strategy = $("policy-select").value;
+    $("policy-select").className = "policy-select " + strategy;
+    try {
+      const res = await fetch(`/api/policy?strategy=${strategy}`, { method: "POST" });
+      showFlash(res.ok);
+    } catch (_) {
+      showFlash(false);
+    }
   });
 
 })();

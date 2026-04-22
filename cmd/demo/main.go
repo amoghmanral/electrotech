@@ -77,7 +77,7 @@ func main() {
 	go fleet.Run(ctx)
 
 	// ---- dashboard ----
-	dash := dashboard.New(fleet, func() any { return svc.Stats().Snapshot() })
+	dash := dashboard.New(fleet, func() any { return svc.Stats().Snapshot() }, svc.SetStrategy)
 	dash.StartBroadcast(ctx, 250*time.Millisecond)
 	go func() {
 		addr := fmt.Sprintf(":%d", *dashPort)

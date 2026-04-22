@@ -22,6 +22,7 @@ import (
 // Service implements policypb.PolicyServiceServer.
 type Service struct {
 	policypb.UnimplementedPolicyServiceServer
+	mu       sync.RWMutex
 	strategy string
 	stats    *Stats
 }
@@ -37,12 +38,35 @@ func NewService(strategy string) (*Service, error) {
 	return &Service{strategy: strategy, stats: newStats(strategy)}, nil
 }
 
-func (s *Service) Strategy() string { return s.strategy }
-func (s *Service) Stats() *Stats    { return s.stats }
+func (s *Service) Strategy() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.strategy
+}
+func (s *Service) Stats() *Stats { return s.stats }
+
+func (s *Service) SetStrategy(strategy string) error {
+	switch strategy {
+	case "greedy", "reactive", "predictive":
+	default:
+		return fmt.Errorf("unknown strategy %q", strategy)
+	}
+	s.mu.Lock()
+	s.strategy = strategy
+	s.stats.mu.Lock()
+	s.stats.strategy = strategy
+	s.stats.mu.Unlock()
+	s.mu.Unlock()
+	return nil
+}
 
 // Dispatch is the gRPC handler. Single pure function call per request —
 // no state carried across calls.
 func (s *Service) Dispatch(ctx context.Context, req *policypb.TickContext) (*policypb.DispatchDecision, error) {
+	s.mu.RLock()
+	strategy := s.strategy
+	s.mu.RUnlock()
+
 	td := sim.TickData{
 		Tick:               int(req.Tick),
 		Hour:               req.Hour,
@@ -54,14 +78,14 @@ func (s *Service) Dispatch(ctx context.Context, req *policypb.TickContext) (*pol
 		BatteryMaxKW:       req.BatteryMaxKw,
 		SolarPeakKW:        req.SolarPeakKw,
 	}
-	bat, grid, err := sim.Dispatch(s.strategy, td)
+	bat, grid, err := sim.Dispatch(strategy, td)
 	if err != nil {
 		return nil, err
 	}
 	return &policypb.DispatchDecision{
 		BatteryKw: bat.PowerKW,
 		GridKw:    grid.PowerKW,
-		Strategy:  s.strategy,
+		Strategy:  strategy,
 	}, nil
 }
 
