@@ -10,7 +10,7 @@ const (
 
 	// Grid tariff bounds (the utility's price curve — see grid.go).
 	GridPriceMin = 0.08
-	GridPriceMax = 0.35
+	GridPriceMax = 0.39
 )
 
 // TickData is the per-tick snapshot the policy consumes.
