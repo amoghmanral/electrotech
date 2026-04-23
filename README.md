@@ -29,7 +29,7 @@ A home energy management simulator built in Go. Models a fleet of homes with sol
 
 ## Dashboard
 
-![Dashboard during evening peak](slides/img/dashboard-evening.png)
+![Dashboard](img/dashboard.png)
 
 ## Dispatch Strategies
 
