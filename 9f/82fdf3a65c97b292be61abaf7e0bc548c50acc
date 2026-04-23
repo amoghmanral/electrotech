@@ -1,0 +1,25 @@
+internal/sim/policy.go
+  dcca744f7d836de8 81-84,95-96
+internal/sim/forecast.go
+  dcca744f7d836de8 1-4,7-27,29-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "9f82fdf3a65c97b292be61abaf7e0bc548c50acc",
+  "prompts": {
+    "dcca744f7d836de8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f501c733-6160-41b2-afed-3f138b82c678",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Aarsh Roongta",
+      "messages": [],
+      "total_additions": 67,
+      "total_deletions": 22,
+      "accepted_lines": 41,
+      "overriden_lines": 2
+    }
+  }
+}
