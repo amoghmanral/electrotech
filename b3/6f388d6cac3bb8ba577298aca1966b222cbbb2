@@ -1,0 +1,25 @@
+internal/sim/policy.go
+  dcca744f7d836de8 91-93
+cmd/compare/main.go
+  dcca744f7d836de8 2-4,8,10,48-65,67-71,74,76-84,88-104,107-125,128,130-132,134,137-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "b36f388d6cac3bb8ba577298aca1966b222cbbb2",
+  "prompts": {
+    "dcca744f7d836de8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f501c733-6160-41b2-afed-3f138b82c678",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Aarsh Roongta",
+      "messages": [],
+      "total_additions": 90,
+      "total_deletions": 32,
+      "accepted_lines": 89,
+      "overriden_lines": 0
+    }
+  }
+}
