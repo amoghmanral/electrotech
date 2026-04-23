@@ -1,0 +1,1 @@
+We used Claude to help write several parts of the project, especially areas we were less familiar with like gRPC service definitions, protobuf code generation, and server interceptors. The dashboard frontend (HTML/CSS/JS) was fully AI-generated.
