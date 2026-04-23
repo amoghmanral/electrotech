@@ -1,9 +1,13 @@
 // compare runs all three dispatch strategies over one simulated day for every
-// home archetype and prints a cost comparison table
+// home archetype and prints a cost comparison table. Monte Carlo: each
+// (strategy, archetype) is replayed over many seeds so we can report mean,
+// std dev, and the stability of the per-archetype winner.
 package main
 
 import (
+	"flag"
 	"fmt"
+	"math"
 	"math/rand"
 
 	"github.com/amoghmanral/electrotech/internal/sim"
@@ -41,45 +45,101 @@ func simulateCost(strategy string, a sim.Archetype, seed int64) float64 {
 	return totalCost
 }
 
+func meanStddev(xs []float64) (mean, stddev float64) {
+	if len(xs) == 0 {
+		return 0, 0
+	}
+	var sum float64
+	for _, x := range xs {
+		sum += x
+	}
+	mean = sum / float64(len(xs))
+	var sq float64
+	for _, x := range xs {
+		d := x - mean
+		sq += d * d
+	}
+	stddev = math.Sqrt(sq / float64(len(xs)))
+	return
+}
+
 func main() {
-	const seed = 390
+	nSeeds := flag.Int("seeds", 100, "number of Monte Carlo seeds")
+	baseSeed := flag.Int64("seed", 390, "base seed (seeds run baseSeed..baseSeed+N-1)")
+	flag.Parse()
+
+	fmt.Printf("Monte Carlo policy comparison: %d seeds per (strategy, archetype)\n\n", *nSeeds)
 
 	// header
-	fmt.Printf("%-30s", "Archetype")
+	fmt.Printf("%-26s", "Archetype")
 	for _, s := range strategies {
-		fmt.Printf("  %12s", s)
+		fmt.Printf("  %18s", s)
 	}
-	fmt.Printf("  %12s  %12s\n", "best", "savings")
-	fmt.Printf("%s\n", repeat("-", 30+3*14+2*14))
+	fmt.Printf("  %12s  %9s\n", "best", "stability")
+	fmt.Printf("%s\n", repeat("-", 26+3*20+14+11))
 
-	var totals [3]float64
+	// totals[strategyIdx] = per-seed total across all archetypes
+	totals := make([][]float64, 3)
+	for i := range totals {
+		totals[i] = make([]float64, *nSeeds)
+	}
+
 	for _, a := range sim.Archetypes {
-		costs := [3]float64{}
-		for i, s := range strategies {
-			costs[i] = simulateCost(s, a, seed)
+		runs := make([][]float64, 3)
+		for i := range runs {
+			runs[i] = make([]float64, *nSeeds)
 		}
-
-		best, bestIdx := costs[0], 0
-		for i, c := range costs {
-			if c < best {
-				best, bestIdx = c, i
+		for si := 0; si < *nSeeds; si++ {
+			seed := *baseSeed + int64(si)
+			for i, s := range strategies {
+				cost := simulateCost(s, a, seed)
+				runs[i][si] = cost
+				totals[i][si] += cost
 			}
-			totals[i] += c
 		}
-		savings := costs[0] - best
 
-		fmt.Printf("%-30s", a.Name)
-		for _, c := range costs {
-			fmt.Printf("  %+12.4f", c)
+		means := make([]float64, 3)
+		sds := make([]float64, 3)
+		for i := 0; i < 3; i++ {
+			means[i], sds[i] = meanStddev(runs[i])
 		}
-		fmt.Printf("  %12s  %+12.4f\n", strategies[bestIdx], savings)
+
+		// best by mean
+		bestIdx := 0
+		for i := 1; i < 3; i++ {
+			if means[i] < means[bestIdx] {
+				bestIdx = i
+			}
+		}
+
+		// stability: fraction of seeds where bestIdx is also the per-seed winner
+		stable := 0
+		for si := 0; si < *nSeeds; si++ {
+			localBest := 0
+			for i := 1; i < 3; i++ {
+				if runs[i][si] < runs[localBest][si] {
+					localBest = i
+				}
+			}
+			if localBest == bestIdx {
+				stable++
+			}
+		}
+		stability := 100.0 * float64(stable) / float64(*nSeeds)
+
+		fmt.Printf("%-26s", a.Name)
+		for i := range strategies {
+			fmt.Printf("  %+9.3f ± %6.3f", means[i], sds[i])
+		}
+		fmt.Printf("  %12s  %8.0f%%\n", strategies[bestIdx], stability)
 	}
 
-	// totals
-	fmt.Printf("%s\n", repeat("-", 30+3*14+2*14))
-	fmt.Printf("%-30s", "TOTAL")
-	for _, t := range totals {
-		fmt.Printf("  %+12.4f", t)
+	// totals across archetypes
+	fmt.Printf("%s\n", repeat("-", 26+3*20+14+11))
+	fmt.Printf("%-26s", "TOTAL")
+	for i := range strategies {
+		m, sd := meanStddev(totals[i])
+		fmt.Printf("  %+9.2f ± %6.2f", m, sd)
 	}
 	fmt.Println()
 }
