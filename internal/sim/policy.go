@@ -78,6 +78,10 @@ const (
 // solar forecast. If the current price is significantly below the window
 // average and solar won't fill the battery on its own, charge from the
 // grid; if it's well above average, discharge. Otherwise greedy.
+//
+// Forecasts are noisy — see forecast.go. Real predictive controllers do
+// not have oracle access to future prices or solar, so using the ground-
+// truth curves here would overstate the policy's performance.
 func PredictiveDispatch(td TickData) (BatteryCmd, GridCmd) {
 	if td.BatteryCapacityKWh <= 0 {
 		return GreedyDispatch(td)
@@ -88,9 +92,8 @@ func PredictiveDispatch(td TickData) (BatteryCmd, GridCmd) {
 	}
 	var futurePrice, futureSolarKWh float64
 	for i := 1; i <= window; i++ {
-		h := TickToHour(td.Tick + i)
-		futurePrice += GridPrice(h)
-		futureSolarKWh += SolarBase(h, td.SolarPeakKW) / float64(TicksPerHour)
+		futurePrice += ForecastPrice(td.Tick, i)
+		futureSolarKWh += ForecastSolar(td.Tick, i, td.SolarPeakKW) / float64(TicksPerHour)
 	}
 	if window > 0 {
 		futurePrice /= float64(window)
