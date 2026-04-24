@@ -8,6 +8,8 @@ A city's electricity cost can swing widely in the span of a day. According to on
 
 ElectroTech is a simulator for this scenario: 1,000 homes with diverse solar and battery configurations coordinated by a central gRPC policy server, with 3 dispatch policies compared head-to-head over a full simulated day.
 
+The design of this system was inspired by real applications like Tesla Powerwall, where the energy use of individual homes is managed by a central service. This centralized control service means that the often proprietary policy algorithms can be kept in the company's servers instead of downloaded on the device of end users. Another benefit is that this central service can connect with other services like virtual power plants, which allows maximum efficiency in energy management.
+
 ---
 
 ## System Design
@@ -39,6 +41,12 @@ We ran each strategy for all 20 archetypes over one simulated day. Total cost is
 | Predictive   | +$35.87     | 0              |
 
 Reactive policy wins by a huge margin, achieving net profit across the fleet. Predictive finishes last despite using more information. Greedy was not bad, and won for several archetypes with low or no battery capacity.
+
+---
+
+## Future Work
+
+Future work on similar projects can extend the design by implementing additional policies of increased complexities. Additionally, attention can be paid to details of how the system can vary in each component. More fluctuations can be added to how solar energy varies, how energy demand changes for each home archetype, how grid pricing can vary, etc.
 
 ---
 
